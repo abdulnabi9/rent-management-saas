@@ -11,9 +11,9 @@ async function getDashboardData(userId: string) {
 
   const [buildings, rooms, tenants, rentPayments, expenses, yearlyRent, yearlyExpenses] =
     await Promise.all([
-      supabase.from("buildings").select("id").eq("user_id", userId),
+      supabase.from("buildings").select("id", { count: "exact", head: true }).eq("user_id", userId),
       supabase.from("rooms").select("status").eq("user_id", userId),
-      supabase.from("tenants").select("id").eq("user_id", userId).eq("status", "active"),
+      supabase.from("tenants").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("status", "active"),
       supabase
         .from("rent_payments")
         .select("amount, status")
@@ -61,12 +61,12 @@ async function getDashboardData(userId: string) {
   });
 
   return {
-    totalBuildings: (buildings.data ?? []).length,
+    totalBuildings: buildings.count ?? 0,
     totalRooms: total,
     occupiedRooms: occupied,
     vacantRooms: vacant,
     maintenanceRooms: maintenance,
-    activeTenants: (tenants.data ?? []).length,
+    activeTenants: tenants.count ?? 0,
     monthlyIncome,
     monthlyExpenses,
     pendingDues,
